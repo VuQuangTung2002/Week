@@ -1,0 +1,153 @@
+﻿
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Modernize Free</title>
+    <link rel="shortcut icon" type="image/png" href="/Backend/assets/images/logos/favicon.png" />
+    <link rel="stylesheet" href="/Backend/assets/css/styles.min.css" />
+</head>
+
+<body>
+    <!--  Body Wrapper -->
+    @if (!string.IsNullOrEmpty(ViewBag.register))
+    {
+        <div if="register">
+            <h4 style="background-color: orangered; color: yellow;text-align: center">@ViewBag.register</h4>
+        </div>
+        <script type="text/javascript">
+            alert('@Html.Raw(ViewBag.register)');
+            setTimeout(function(){
+                document.getElementById("register").style.display = "none";
+            }, 3000);
+        </script>
+    }
+   
+    <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
+         data-sidebar-position="fixed" data-header-position="fixed">
+        <div class="position-relative overflow-hidden radial-gradient min-vh-100 d-flex align-items-center justify-content-center">
+            <div class="d-flex align-items-center justify-content-center w-100">
+                <div class="row justify-content-center w-100">
+                    <div class="col-md-8 col-lg-6 col-xxl-3">
+                        <div class="card mb-0">
+                            <div class="card-body">
+                                <a href="./index.html" class="text-nowrap logo-img text-center d-block py-3 w-100">
+                                    <img src="/Backend/assets/images/logos/dark-logo.svg" width="180" alt="">
+                                </a>
+                                <p class="text-center">Your Social Campaigns</p>
+                                <form id="loginForm" action="@ViewBag.action" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <div class="mb-3">
+                                        <label for="exampleInputEmail1" class="form-label">Email</label>
+                                        <input type="email" name="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="exampleInputPassword1" class="form-label">Password</label>
+                                        <input id="password" name="password" type="password" class="form-control" id="exampleInputPassword1">
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between mb-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input primary" type="checkbox" value="" id="flexCheckChecked" checked>
+                                            <label class="form-check-label text-dark" for="flexCheckChecked">
+                                                Remeber this Device
+                                            </label>
+                                        </div>
+                                        <a class="text-primary fw-bold" href="./index.html">Forgot Password ?</a>
+                                    </div>
+                                    <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+                                    <input type="submit"  value="Sign In" class="btn btn-primary w-100 py-8 fs-4 mb-4 rounded-2">
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <p class="fs-4 mb-0 fw-bold">New to Modernize?</p>
+                                        <a class="text-primary fw-bold ms-2" href="/Admin/Register/Index">Create an account</a>
+                                    </div>
+                                    
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+   
+    <script src="/Backend/assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="/Backend/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // JavaScript để lưu thông tin vào Session Storage sau khi đăng nhập
+        document.getElementById('loginForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Ngăn gửi form theo cách mặc định
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            // Gửi dữ liệu đến server
+            fetch(form.action, {
+                method: form.method,
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.accessToken && data.refreshToken) {
+                        // Lưu token vào Session Storage
+                        localStorage.setItem('AccessToken', data.accessToken);
+                        localStorage.setItem('RefreshToken', data.refreshToken);
+                        // Redirect hoặc thực hiện hành động sau khi lưu token
+                        window.location.href = '/Admin/Home/Index'; // Thay đổi đường dẫn theo nhu cầu
+                    } else {
+                        // Xử lý lỗi nếu không có token
+                        alert('Login failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred');
+                });
+        });
+        function checkLoginStatus() {
+            const token = localStorage.getItem('AccessToken');
+
+            if (token) {
+                // Gửi yêu cầu xác thực token với server để xác nhận tính hợp lệ
+                fetch('http://localhost:5010/api/verify-token', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            // Token hợp lệ, tự động đăng nhập người dùng
+                            console.log('Đăng nhập tự động thành công!');
+                            window.location.href = '/Admin/Home/Index';
+                        } else {
+                            // Token không hợp lệ hoặc hết hạn, yêu cầu người dùng đăng nhập lại
+                            console.error('Token không hợp lệ hoặc hết hạn.');
+                            window.location.href = '/Admin/Account/Login';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi xác thực token:', error);
+                        window.location.href = '/Admin/Account/Login';
+                    });
+            } else {
+                // Token không tồn tại, yêu cầu người dùng đăng nhập
+                window.location.href = '/Admin/Account/Login';
+            }
+        }
+
+        // Gọi hàm kiểm tra khi trang được load
+        document.addEventListener('DOMContentLoaded', (event) => {
+            checkLoginStatus();
+        });
+
+    </script>
+</body>
+
+</html>

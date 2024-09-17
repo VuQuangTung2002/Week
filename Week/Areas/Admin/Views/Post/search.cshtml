@@ -1,0 +1,256 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/Layout.cshtml";
+}
+@using Week.Models
+@using X.PagedList.Mvc.Core
+<!-- de duyet cac model cua pagelist-->
+@model X.PagedList.IPagedList<ItemPosts>
+<!-- lay tat ca san pahm cung loai-->
+@inject MyDbConnect db;
+@functions {
+
+    // lay categories Id ra du lieu
+
+    public string categoriesId(int Id)
+    {
+        ItemUsers cate = db.Users.Where(s => s.Id == Id).FirstOrDefault();
+        return cate.UserName.ToString().Trim();
+    }
+}
+<div class="body-wrapper">
+    <!--  Header Start -->
+    <header class="app-header">
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item d-block d-xl-none">
+                    <a class="nav-link sidebartoggler nav-icon-hover" id="headerCollapse" href="javascript:void(0)">
+                        <i class="ti ti-menu-2"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-icon-hover" href="javascript:void(0)">
+                        <i class="ti ti-bell-ringing"></i>
+                        <div class="notification bg-primary rounded-circle"></div>
+                    </a>
+                </li>
+            </ul>
+            <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
+                <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
+                    <a href="https://adminmart.com/product/modernize-free-bootstrap-admin-dashboard/" target="_blank" class="btn btn-primary">Download Free</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            <img src="/Backend/assets/images/profile/user-1.jpg" alt="" width="35" height="35" class="rounded-circle">
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
+                            <div class="message-body">
+                                <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
+                                    <i class="ti ti-user fs-6"></i>
+                                    <p class="mb-0 fs-3">My Profile</p>
+                                </a>
+                                <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
+                                    <i class="ti ti-mail fs-6"></i>
+                                    <p class="mb-0 fs-3">My Account</p>
+                                </a>
+                                <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
+                                    <i class="ti ti-list-check fs-6"></i>
+                                    <p class="mb-0 fs-3">My Task</p>
+                                </a>
+                                <a href="./authentication-login.html" class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <!--  Header End -->
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-11 d-flex align-items-stretch">
+
+                <div class="card w-100">
+                    <h3><a href="/Admin/Post/List_Task">Return</a></h3>
+                    <div class="lopcha">
+
+                        <h4>Search: <input type="text" style="width: 200px" onkeyup="search()" id="Searchkey" /></h4>
+                        <span style="margin-left: 20px;"></span>
+                        <select style="width: 100px;margin-left: 20px; height: 35px" id="select" class="form-select" tabindex="1">
+                            <option value="TieuDe">Tiêu Đề</option>
+                            <option value="NoiDung">Nội Dung</option>
+                            <option value="NguoiDang">Người Đăng</option>
+                        </select>
+                        <button value="Button" style="height: 30px;width: 80px;margin-left: 10px" onclick="location.href='/Admin/Post/search?Searchkey='+encodeURIComponent(document.getElementById('Searchkey').value)+'&select='+encodeURIComponent(document.getElementById('select').value)">Button</button>
+                        <div class="lopcon">
+                            <ul>
+                                <li><span>Vu Quang Tung</span>&nbsp; <span>XXX</span></li>
+                                <li><span>Vu Quang Tung</span>&nbsp; <span>XXX</span></li>
+                                <li><span>Vu Quang Tung</span>&nbsp; <span>XXX</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <style>
+                        .lopcha {
+                            display: flex;
+                            position: relative;
+                        }
+
+                        .lopcon {
+                            position: absolute;
+                            left: 0;
+                            top: 100%;
+                            width: 200px;
+                            max-height: 200px;
+                            overflow-y: auto;
+                            z-index: 1000;
+                            display: none;
+                            background-color: white;
+                            border: 1px solid #ccc;
+                        }
+
+                            .lopcon ul {
+                                list-style-type: none;
+                            }
+
+                                .lopcon ul li {
+                                    padding: 5px;
+                                    border-bottom: 1px solid #eee;
+                                }
+                    </style>
+                    <script>
+                        var searchkey = document.getElementById("Searchkey").value;
+                        var select = document.getElementById("select").value;
+                        if (searchkey.length >= 2) {
+                            $(".lopcon").attr("style", "display: block");
+                            $.get("/Admin/Post/search?Searchkey=" + encodeURIComponent(searchkey) + "&select =" + encodeURIComponent(select), function (result) {
+                                // xoa het du lieu co trong lop con di
+                                $(".lopcon ul").empty();
+                                // ap dungj nhung du lieu co trong lop con ket qua nhan duoc tu get do vao trong result
+                                $(".lopcon ul").append(result);
+
+                            });
+                        }
+                        else {
+                            $(".lopcon").hide();
+                        }
+                    </script>
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-semibold mb-4">List Post</h5>
+                        <div class="table-responsive">
+                            <h5 class="card-title fw-semibold mb-4"><a href="/Admin/Post/Create">Create Post</a></h5>
+                            <table class="table text-nowrap mb-0 align-middle">
+                                <thead class="text-dark fs-4">
+                                    <tr>
+
+                                        <th class="border-bottom-0">
+                                            <h6 class="fw-semibold mb-0">Tiêu Đề</h6>
+                                        </th>
+                                        <th class="border-bottom-0">
+                                            <h6 class="fw-semibold mb-0">Nội Dung</h6>
+                                        </th>
+                                        <th class="border-bottom-0">
+                                            <h6 class="fw-semibold mb-0">Ngày Đăng</h6>
+                                        </th>
+                                        <th class="border-bottom-0">
+                                            <h6 class="fw-semibold mb-0">NGười Đăng</h6>
+
+                                        </th>
+                                        <th class="border-bottom-0">
+                                            <h6 class="fw-semibold mb-0">Image</h6>
+
+                                        </th>
+                                        <th class="border-bottom-0">
+                                            <h6 class="fw-semibold mb-0"></h6>
+                                        </th>
+                                        <th class="border-bottom-0">
+                                            <h6 class="fw-semibold mb-0"></h6>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    @foreach (var x in Model)
+                                    {
+                                        <tr>
+
+                                            <td class="border-bottom-0">
+
+                                                <p class="mb-0 fw-normal">@x.TieuDe</p>
+                                            </td>
+                                            <td class="border-bottom-0">
+                                                <p class="mb-0 fw-normal">@x.NoiDung</p>
+                                            </td>
+                                            <td class="border-bottom-0">
+                                                <p class="mb-0 fw-normal">@x.NgayDang</p>
+                                            </td>
+
+
+                                            @{
+                                                int id = Convert.ToInt32(@x.Id);
+                                                var cate = categoriesId(id);
+                                            }
+                                            <td class="border-bottom-0">
+                                                <p class="mb-0 fw-normal">@cate</p>
+                                            </td>
+                                            <td>
+                                                @* File.Exists -> kiem tra file co ton tai khong *@
+                                                @* Directory.GetCurrentDirectory() -> lay duong dan thu muc *@
+                                                @if (x.Image != null && File.Exists(Directory.GetCurrentDirectory() + "\\wwwroot\\Image\\" + x.Image))
+                                                {
+                                                    <img src="@Url.Content("~/Image/" + x.Image)" style="width:100px;" />
+
+                                                }
+                                            </td>
+
+                                            <td class="border-bottom-0">
+                                                <h6 class="fw-semibold mb-0 fs-4"><a href="/Admin/Post/Update/@x.PostId">Edit</a></h6>
+                                            </td>
+                                            <td class="border-bottom-0">
+                                                <h6 class="fw-semibold mb-0 fs-4"><a href="/Admin/Post/Delete/@x.PostId" onclick="return window.confirm('Are you surre to delete?');">Delete</a></h6>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+            @if (!string.IsNullOrEmpty(ViewBag.errorSelectTask as string))
+            {
+                <h4 style="background-color: red; text-align: center; color: white">@ViewBag.errorSelectTask</h4>
+            }
+        </div>
+        <nav aria-label="Page navigation">
+            @Html.PagedListPager(Model, page => Url.Action("List_Post", new { Searchkey = ViewBag.Searchkey, select = ViewBag.select,page }), new PagedListRenderOptions
+       {
+           LiElementClasses = new string[] { "page-item" },
+           PageClasses = new string[] { "page-link" },
+           DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+           DisplayLinkToLastPage = PagedListDisplayMode.Always,
+           MaximumPageNumbersToDisplay = 5,
+           DisplayEllipsesWhenNotShowingAllPageNumbers = true,
+           EllipsesFormat = "&#8230;",
+           LinkToFirstPageFormat = "««",
+           LinkToPreviousPageFormat = "«",
+           LinkToNextPageFormat = "»",
+           LinkToLastPageFormat = "»»",
+           ContainerDivClasses = new string[] { "pagination", "justify-content-center" }
+       })
+        </nav>
+        <p>Tổng số task: @Model.TotalItemCount</p>
+        <div class="py-6 px-6 text-center">
+            <p class="mb-0 fs-4">Design and Developed by <a href="https://adminmart.com/" target="_blank" class="pe-1 text-primary text-decoration-underline">VUTUNG@GMAIL.COM</a> Distributed by <a href="https://themewagon.com">VU QUANG TUNG</a></p>
+        </div>
+    </div>
+    @* @for(int i=1;i< Model.PageCount; i++)
+    {
+    string str_current = (i == Model.PageNumber) ? "current" : "";
+    <li style="padding-right: 50px"> <span class="page-number-item @str_current"><a href="/Task/List_Task/@ViewBag.TaskId?page=@i"> @i</a></span></li>
+    } *@
+    @*     @Html.PagedListPager(Model, page => Url.Action("List_Task", new{page = page, a=1, b=2, c=3}));
+    *@
+
+</div>
